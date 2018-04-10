@@ -15,8 +15,17 @@ import com.hazelcast.session.HazelcastSessionChangeValve;
 import com.hazelcast.session.HazelcastSession;
 import com.hazelcast.session.HazelcastSessionManager;
 
+/**
+ *
+ * @author igor.burenkov
+ */
 public class SessionManager extends HazelcastSessionManager {
     private final Log log = LogFactory.getLog(SessionManager.class);
+    
+    public SessionManager() {
+        super();
+    }
+    
     @Override
     public void startInternal() throws LifecycleException {
         super.startInternal();
@@ -37,7 +46,7 @@ public class SessionManager extends HazelcastSessionManager {
                 getContext().getPipeline().removeValve(v);
             }            
             //install new valve
-            SessionChangeValve sessionChangeValve = new SessionChangeValve();
+            SessionIdChangeValve sessionChangeValve = new SessionIdChangeValve();
             sessionChangeValve.setAsyncSupported(true);
             getContext().getPipeline().addValve(sessionChangeValve);
         }
@@ -55,7 +64,7 @@ public class SessionManager extends HazelcastSessionManager {
     }
     
     protected void bindHzSessionToNode(HazelcastSession hzSession) {
-        if (hzSession != null) { 
+        if (hzSession != null && hzSession.getId() != null) { 
             String oldId = hzSession.getId();
             String newId = getLocalSessionId(oldId);
             hzSession.access();
@@ -74,11 +83,11 @@ public class SessionManager extends HazelcastSessionManager {
         }
     }
     
-    private HazelcastSession getDistributedSession(String id) {
+    protected HazelcastSession getDistributedSession(String id) {
         log.debug("Try lookup session from Hazelcast map:" + getMapName() + " with session "+id);        
         HazelcastSession hzSession = getDistributedMap().get(id);
         if (hzSession != null) {
-            log.info("Some failover occured so reading session from Hazelcast map");
+            log.info("Bind session to local node");
             bindHzSessionToNode(hzSession);
         }
         return hzSession;

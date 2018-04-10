@@ -12,9 +12,13 @@ import org.apache.catalina.Session;
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
 
-class SessionChangeValve extends ValveBase {
+/**
+ *
+ * @author igor.burenkov
+ */
+class SessionIdChangeValve extends ValveBase {
 
-    private final Log log = LogFactory.getLog(SessionChangeValve.class);
+    private final Log log = LogFactory.getLog(SessionIdChangeValve.class);
 
     @Override
     public void invoke(Request request, Response response) 
